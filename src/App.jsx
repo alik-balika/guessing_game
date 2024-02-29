@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CssBaseline } from "@mui/material";
 
-import { HomePage, CreatePage } from "./pages";
+import { HomePage, CreatePage, RoomPage } from "./pages";
 
 const App = () => {
   return (
@@ -11,6 +11,7 @@ const App = () => {
       <Routes>
         <Route path="/" exact element={<HomePage />} />
         <Route path="/create" exact element={<CreatePage />} />
+        <Route path="/room/:roomName" exact element={<RoomPage />} />
       </Routes>
     </BrowserRouter>
   );

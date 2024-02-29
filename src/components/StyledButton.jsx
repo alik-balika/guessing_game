@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button } from "@mui/material";
 
-const StyledButton = ({ text, mt, mb }) => {
+const StyledButton = ({ text, mb, onClick }) => {
   return (
     <Button
       variant="contained"
@@ -10,11 +10,11 @@ const StyledButton = ({ text, mt, mb }) => {
         backgroundColor: "black",
         borderRadius: 10,
         width: "100%",
-        marginTop: mt,
         marginBottom: mb,
         height: 80,
       }}
       color="secondary"
+      onClick={onClick}
     >
       {text}
     </Button>
@@ -23,8 +23,8 @@ const StyledButton = ({ text, mt, mb }) => {
 
 StyledButton.propTypes = {
   text: PropTypes.string.isRequired,
-  mt: PropTypes.number,
   mb: PropTypes.number,
+  onClick: PropTypes.func,
 };
 
 export default StyledButton;

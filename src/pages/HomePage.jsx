@@ -20,10 +20,12 @@ const HomePage = () => {
         <StyledButton
           text="Create a Room"
           mb={2}
-          onClick={() => navigate("/create")}
+          onClick={() => navigate("/create-room")}
         />
-        <StyledButton text="Join a Room" />
-        <div style={{}}></div>
+        <StyledButton
+          text="Join a Room"
+          onClick={() => navigate("/join-room")}
+        />
       </Box>
     </Box>
   );

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import StyledButton from "../components/StyledButton";
 
-const CreatePage = () => {
+const CreateRoomPage = () => {
   const [roomName, setRoomName] = useState("");
   const navigate = useNavigate();
 
@@ -31,6 +31,7 @@ const CreatePage = () => {
         <TextField
           placeholder="Room Name"
           variant="outlined"
+          color="secondary"
           fullWidth
           value={roomName}
           onChange={(e) => setRoomName(e.target.value)}
@@ -42,4 +43,4 @@ const CreatePage = () => {
   );
 };
 
-export default CreatePage;
+export default CreateRoomPage;

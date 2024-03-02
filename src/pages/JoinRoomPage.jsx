@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Box, TextField, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import axios from "axios";
 
 import Header from "../components/Header";
 import StyledButton from "../components/StyledButton";
+
+const socket = io.connect("http://localhost:7000");
 
 const JoinRoomPage = () => {
   const [roomName, setRoomName] = useState("");
@@ -11,9 +14,7 @@ const JoinRoomPage = () => {
   const [userInput, setUserInput] = useState("");
   const [submit, setSubmit] = useState(false);
 
-  const navigate = useNavigate();
-
-  const navigateToRoomPage = () => {
+  const joinRoom = async () => {
     let message = "";
 
     if (!roomName.trim()) {
@@ -33,7 +34,43 @@ const JoinRoomPage = () => {
       return;
     }
 
-    setSubmit(true);
+    const roomId = await fetchRoomId();
+    if (!roomId) {
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/players", {
+        roomId: roomId,
+        name: userName,
+        input: userInput,
+      });
+      const playerId = response.data._id;
+
+      socket.emit("joinRoom", { roomName, playerId });
+      console.log("done");
+      setSubmit(true);
+    } catch (error) {
+      alert("Error joining room:", error);
+    }
+  };
+
+  const fetchRoomId = async () => {
+    try {
+      const response = await axios.get(`/api/rooms/${roomName}`);
+      if (response.data) {
+        return response.data._id;
+      }
+      return null;
+    } catch (error) {
+      if (error.response.status === 404) {
+        alert("Room not found!");
+        return null;
+      } else {
+        alert("Error fetching room:", error);
+        return null;
+      }
+    }
   };
 
   return (
@@ -75,7 +112,7 @@ const JoinRoomPage = () => {
               onChange={(e) => setUserInput(e.target.value)}
               sx={{ marginBottom: 2 }}
             />
-            <StyledButton text="Join" onClick={navigateToRoomPage} />
+            <StyledButton text="Join" onClick={joinRoom} />
           </Box>
         </Box>
       ) : (

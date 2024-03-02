@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import Header from "../components/Header";
 import StyledButton from "../components/StyledButton";
@@ -9,13 +10,25 @@ const CreateRoomPage = () => {
   const [roomName, setRoomName] = useState("");
   const navigate = useNavigate();
 
-  const navigateToRoomPage = () => {
+  const navigateToRoomPage = async () => {
     const trimmed = roomName.trim();
     if (!trimmed) {
       alert("Please enter a room name!");
       return;
     }
-    navigate(`/room/${roomName}`);
+
+    try {
+      await axios.post("/api/rooms", { name: roomName });
+      navigate(`/room/${roomName}`);
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        alert(
+          "A room with this name already exists. Please choose a different name."
+        );
+      } else {
+        alert("Error creating room:", error);
+      }
+    }
   };
 
   return (

@@ -3,6 +3,7 @@ import { Box, Grid, Stack, Typography, Select, MenuItem } from "@mui/material";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
+import ConfettiExplosion from "react-confetti-explosion";
 
 import Header from "../components/Header";
 import StyledButton from "../components/StyledButton";
@@ -45,8 +46,8 @@ const samplePlayers = [
   },
 ];
 
-// TODO CREATE A GAME OVER SCREEN WITH CONFETTI MAYBE? (FIND A LIBRARY)
-// MAKE A PLAY AGAIN BUTTON OR SOMETHING
+// TODO MAKE A PLAY AGAIN BUTTON OR SOMETHING
+// Query the server to get players details from db based on id and handle start game button
 // MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
 // PUBLISH CODE AND MAKE IT ONLINE
 
@@ -54,12 +55,21 @@ const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
   const [players, setPlayers] = useState(samplePlayers); // changed to historyOfPlayers later
+  const [explosionKey, setExplosionKey] = useState(0);
 
   const [editingIndex, setEditingIndex] = useState(-1);
   const [selectedPlayer, setSelectedPlayer] = useState("");
 
   const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
   const playerColors = generatePlayerColors(players);
+  const isGameOver = () => {
+    if (!players.length) {
+      return false;
+    }
+
+    const firstOwner = players[0].ownedBy;
+    return players.every((player) => player.ownedBy === firstOwner);
+  };
 
   const handlePlayerGuessed = (index) => {
     const player = players[index];
@@ -127,6 +137,30 @@ const RoomPage = () => {
         </Typography>
         <StyledButton text="Start" />
       </Box>;
+    }
+
+    if (isGameOver()) {
+      return (
+        <Box>
+          <ConfettiExplosion
+            key={explosionKey}
+            onComplete={() => setExplosionKey((prevKey) => prevKey + 1)}
+          />
+          <Typography gutterBottom variant="h6">
+            Player{" "}
+            <span
+              style={{
+                color: playerColors[players[0].ownedBy],
+                fontWeight: "bold",
+              }}
+            >
+              {players[0].ownedBy}
+            </span>{" "}
+            wins!
+          </Typography>
+          <StyledButton text="Play Again" />
+        </Box>
+      );
     }
 
     return (

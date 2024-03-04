@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Box, Grid, Stack, Typography, Select, MenuItem } from "@mui/material";
+import {
+  teal,
+  purple,
+  orange,
+  deepPurple,
+  deepOrange,
+  indigo,
+  blue,
+  green,
+  red,
+  pink,
+  yellow,
+  cyan,
+  lime,
+} from "@mui/material/colors";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
@@ -9,6 +24,21 @@ import StyledButton from "../components/StyledButton";
 import "./roomPage.css";
 
 const socket = io.connect("http://localhost:7000");
+const colorPalette = [
+  teal[500],
+  purple[500],
+  orange[500],
+  deepPurple[500],
+  deepOrange[500],
+  indigo[500],
+  blue[500],
+  green[500],
+  red[500],
+  pink[500],
+  yellow[500],
+  cyan[500],
+  lime[500],
+];
 
 const samplePlayers = [
   {
@@ -43,6 +73,11 @@ const samplePlayers = [
   },
 ];
 
+// TODO CREATE A GAME OVER SCREEN WITH CONFETTI MAYBE? (FIND A LIBRARY)
+// MAKE A PLAY AGAIN BUTTON OR SOMETHING
+// MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
+// ALSO POTENTIALLY REFACTOR THIS AS ITS GETTING BIG AND MESSY
+
 const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
@@ -52,6 +87,15 @@ const RoomPage = () => {
   const [selectedPlayer, setSelectedPlayer] = useState("");
 
   const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
+
+  const generatePlayerColors = () => {
+    const playerColors = {};
+    players.forEach((player, index) => {
+      playerColors[player.ownedBy] = colorPalette[index % colorPalette.length];
+    });
+    return playerColors;
+  };
+  const playerColors = generatePlayerColors();
 
   const handlePlayerGuessed = (index) => {
     const player = players[index];
@@ -93,7 +137,7 @@ const RoomPage = () => {
         if (error.response && error.response.status === 404) {
           setRoomExists(false);
         } else {
-          // alert("Error while retrieving room:", error);
+          alert("Error while retrieving room:", error);
         }
       }
     };
@@ -168,7 +212,12 @@ const RoomPage = () => {
                         cursor: "pointer",
                       }}
                       bgcolor={
-                        player.createdBy !== player.ownedBy ? "#eee" : ""
+                        player.createdBy !== player.ownedBy
+                          ? playerColors[player.ownedBy]
+                          : ""
+                      }
+                      color={
+                        player.createdBy !== player.ownedBy ? "white" : "black"
                       }
                       p={1}
                       onClick={() => handlePlayerGuessed(index)}

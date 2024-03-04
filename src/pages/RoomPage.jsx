@@ -13,32 +13,32 @@ const socket = io.connect("http://localhost:7000");
 const samplePlayers = [
   {
     input: "shrek",
-    belongsTo: "bob",
+    createdBy: "bob",
     ownedBy: "bob",
   },
   {
     input: "inception",
-    belongsTo: "fred",
+    createdBy: "fred",
     ownedBy: "fred",
   },
   {
     input: "interstellar",
-    belongsTo: "jan",
+    createdBy: "jan",
     ownedBy: "jan",
   },
   {
     input: "top gun",
-    belongsTo: "kate",
+    createdBy: "kate",
     ownedBy: "kate",
   },
   {
     input: "game night",
-    belongsTo: "joey",
+    createdBy: "joey",
     ownedBy: "joey",
   },
   {
     input: "knives out",
-    belongsTo: "nate",
+    createdBy: "nate",
     ownedBy: "nate",
   },
 ];
@@ -49,18 +49,27 @@ const RoomPage = () => {
   const [players, setPlayers] = useState(samplePlayers);
 
   const [editingIndex, setEditingIndex] = useState(-1);
-  const [selectedPlayer, setSelectedPlayer] = useState("bob");
+  const [selectedPlayer, setSelectedPlayer] = useState("");
 
   const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
 
   const handlePlayerGuessed = (index) => {
+    const player = players[index];
+    if (player.createdBy !== player.ownedBy) return;
     setEditingIndex(index);
     setSelectedPlayer(playersStillIn[0]);
   };
 
   const handleInputBlur = () => {
-    const updatedPlayers = [...players];
-    updatedPlayers[editingIndex].input = selectedPlayer;
+    const previousOwner = players[editingIndex].ownedBy;
+
+    const updatedPlayers = players.map((player) => {
+      if (player.ownedBy === previousOwner) {
+        return { ...player, ownedBy: selectedPlayer };
+      }
+      return player;
+    });
+
     setPlayers(updatedPlayers);
     setEditingIndex(-1);
   };
@@ -154,12 +163,20 @@ const RoomPage = () => {
                     </Select>
                   ) : (
                     <Typography
-                      sx={{ border: "1px solid black", cursor: "pointer" }}
+                      sx={{
+                        border: "1px solid black",
+                        cursor: "pointer",
+                      }}
+                      bgcolor={
+                        player.createdBy !== player.ownedBy ? "#eee" : ""
+                      }
                       p={1}
                       onClick={() => handlePlayerGuessed(index)}
                       variant="h6"
                     >
-                      {player.input}
+                      {player.createdBy === player.ownedBy
+                        ? player.input
+                        : player.ownedBy}
                     </Typography>
                   )}
                 </Grid>

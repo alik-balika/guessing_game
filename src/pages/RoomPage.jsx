@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Grid, Stack, Typography, TextField } from "@mui/material";
+import { Box, Grid, Stack, Typography, Select, MenuItem } from "@mui/material";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
@@ -13,23 +13,33 @@ const socket = io.connect("http://localhost:7000");
 const samplePlayers = [
   {
     input: "shrek",
-    belongsTo: "player1",
-    ownedBy: "player1",
+    belongsTo: "bob",
+    ownedBy: "bob",
   },
   {
     input: "inception",
-    belongsTo: "player2",
-    ownedBy: "player2",
+    belongsTo: "fred",
+    ownedBy: "fred",
   },
   {
     input: "interstellar",
-    belongsTo: "player3",
-    ownedBy: "player3",
+    belongsTo: "jan",
+    ownedBy: "jan",
   },
   {
     input: "top gun",
-    belongsTo: "player4",
-    ownedBy: "player4",
+    belongsTo: "kate",
+    ownedBy: "kate",
+  },
+  {
+    input: "game night",
+    belongsTo: "joey",
+    ownedBy: "joey",
+  },
+  {
+    input: "knives out",
+    belongsTo: "nate",
+    ownedBy: "nate",
   },
 ];
 
@@ -39,20 +49,18 @@ const RoomPage = () => {
   const [players, setPlayers] = useState(samplePlayers);
 
   const [editingIndex, setEditingIndex] = useState(-1);
-  const [editedInput, setEditedInput] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState("bob");
 
-  const handleDoubleClick = (index) => {
+  const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
+
+  const handlePlayerGuessed = (index) => {
     setEditingIndex(index);
-    setEditedInput(players[index].input);
-  };
-
-  const handleInputChange = (e) => {
-    setEditedInput(e.target.value);
+    setSelectedPlayer(playersStillIn[0]);
   };
 
   const handleInputBlur = () => {
     const updatedPlayers = [...players];
-    updatedPlayers[editingIndex].input = editedInput;
+    updatedPlayers[editingIndex].input = selectedPlayer;
     setPlayers(updatedPlayers);
     setEditingIndex(-1);
   };
@@ -101,36 +109,63 @@ const RoomPage = () => {
             <StyledButton text="Start" />
           </Box>
         ) : (
-          <Grid container p={3}>
-            {players.map((player, index) => (
-              <Grid key={index} item xs={6}>
-                {editingIndex === index ? (
-                  <TextField
-                    fullWidth
-                    value={editedInput}
-                    onChange={handleInputChange}
-                    onBlur={handleInputBlur}
-                    onClick={(e) => e.target.select()}
-                    autoFocus
-                    sx={{
-                      padding: 0,
-                      "& .MuiInputBase-input": {
-                        padding: "10px",
-                      },
-                    }}
-                  />
-                ) : (
-                  <Typography
-                    sx={{ border: "1px solid black", cursor: "pointer" }}
-                    p={1}
-                    onClick={() => handleDoubleClick(index)}
-                  >
-                    {player.input}
+          <Box>
+            <Box px={3}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Still in:
+              </Typography>
+              <Box
+                display="flex"
+                gap={1}
+                flex={1}
+                flexBasis="content"
+                flexWrap="wrap"
+              >
+                {playersStillIn.map((player) => (
+                  <Typography key={player} variant="subtitle1">
+                    {player}
                   </Typography>
-                )}
-              </Grid>
-            ))}
-          </Grid>
+                ))}
+              </Box>
+            </Box>
+            <Grid container p={3}>
+              {players.map((player, index) => (
+                <Grid key={index} item xs={6}>
+                  {editingIndex === index ? (
+                    <Select
+                      fullWidth
+                      id="player-select"
+                      value={selectedPlayer}
+                      label="Pick a player"
+                      onChange={(e) => setSelectedPlayer(e.target.value)}
+                      onBlur={handleInputBlur}
+                      sx={{
+                        padding: 0,
+                        "& .MuiSelect-select": {
+                          padding: "13px",
+                        },
+                      }}
+                    >
+                      {playersStillIn.map((player) => (
+                        <MenuItem key={player} value={player}>
+                          {player}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  ) : (
+                    <Typography
+                      sx={{ border: "1px solid black", cursor: "pointer" }}
+                      p={1}
+                      onClick={() => handlePlayerGuessed(index)}
+                      variant="h6"
+                    >
+                      {player.input}
+                    </Typography>
+                  )}
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         )
       ) : (
         <Typography variant="body1" align="center">

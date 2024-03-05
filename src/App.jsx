@@ -9,7 +9,7 @@ const App = () => {
     <BrowserRouter>
       <CssBaseline />
       <Routes>
-        <Route path="/" exact element={<HomePage />} />
+        <Route path="/guessing_game_frontend/" exact element={<HomePage />} />
         <Route path="/create-room" exact element={<CreateRoomPage />} />
         <Route path="/room/:roomName" exact element={<RoomPage />} />
         <Route path="/join-room" exact element={<JoinRoomPage />} />

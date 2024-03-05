@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Box, Grid, Stack, Typography, Select, MenuItem } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Stack,
+  Typography,
+  Select,
+  MenuItem,
+  IconButton,
+} from "@mui/material";
+import UndoIcon from "@mui/icons-material/Undo";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
@@ -13,52 +22,17 @@ import PlayersStillIn from "../components/PlayersStillIn";
 
 const socket = io.connect("http://localhost:7000");
 
-const samplePlayers = [
-  {
-    input: "shrek",
-    createdBy: "bob",
-    ownedBy: "bob",
-  },
-  {
-    input: "inception",
-    createdBy: "fred",
-    ownedBy: "fred",
-  },
-  {
-    input: "interstellar",
-    createdBy: "jan",
-    ownedBy: "jan",
-  },
-  {
-    input: "top gun",
-    createdBy: "kate",
-    ownedBy: "kate",
-  },
-  {
-    input: "game night",
-    createdBy: "joey",
-    ownedBy: "joey",
-  },
-  {
-    input: "knives out",
-    createdBy: "nate",
-    ownedBy: "nate",
-  },
-];
-
-// TODO MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
-// PUBLISH CODE AND MAKE IT ONLINE
-
 const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
-  const [players, setPlayers] = useState([]); // changed to historyOfPlayers later
+  const [history, setHistory] = useState([[]]);
   const [explosionKey, setExplosionKey] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState(-1);
   const [selectedPlayer, setSelectedPlayer] = useState("");
 
+  const players = history[history.length - 1];
   const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
   const playerColors = generatePlayerColors(players);
 
@@ -88,7 +62,7 @@ const RoomPage = () => {
       return player;
     });
 
-    setPlayers(updatedPlayers);
+    setHistory([...history, updatedPlayers]);
     setEditingIndex(-1);
     setSelectedPlayer("");
   };
@@ -109,7 +83,8 @@ const RoomPage = () => {
             ownedBy: player.name,
           };
 
-          setPlayers([...players, newPlayer]);
+          const updatedPlayers = [...players, newPlayer];
+          setHistory([updatedPlayers]);
         } catch (error) {
           if (error.response && error.response.status === 404) {
             console.log("Error fetching player with id:", data.playerId);
@@ -145,6 +120,11 @@ const RoomPage = () => {
 
     fetchRoom();
   }, [roomName]);
+
+  const undoLastInput = () => {
+    const prevHistory = [...history.slice(0, -1)];
+    setHistory(prevHistory);
+  };
 
   const renderRoomContent = () => {
     if (!roomExists) {
@@ -197,6 +177,11 @@ const RoomPage = () => {
     return (
       <Box>
         {gameStarted && <PlayersStillIn playersStillIn={playersStillIn} />}
+        {gameStarted && history.length > 1 && (
+          <IconButton sx={{ px: 3 }} onClick={undoLastInput}>
+            <UndoIcon fontSize="large" />
+          </IconButton>
+        )}
         <Grid container p={3}>
           {players.map((player, index) => (
             <Grid key={player._id} item xs={6}>

@@ -9,8 +9,8 @@ const PlayersStillIn = ({ playersStillIn }) => {
         Still in:
       </Typography>
       <Box display="flex" gap={1} flex={1} flexBasis="content" flexWrap="wrap">
-        {playersStillIn.map((player) => (
-          <Typography key={player} variant="subtitle1">
+        {playersStillIn.map((player, index) => (
+          <Typography key={index} variant="subtitle1">
             {player}
           </Typography>
         ))}

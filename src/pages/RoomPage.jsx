@@ -47,23 +47,24 @@ const samplePlayers = [
 ];
 
 // TODO MAKE A PLAY AGAIN BUTTON OR SOMETHING
-// Query the server to get players details from db based on id and handle start game button
 // MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
 // PUBLISH CODE AND MAKE IT ONLINE
 
 const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
-  const [players, setPlayers] = useState(samplePlayers); // changed to historyOfPlayers later
+  const [players, setPlayers] = useState([]); // changed to historyOfPlayers later
   const [explosionKey, setExplosionKey] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState(-1);
   const [selectedPlayer, setSelectedPlayer] = useState("");
 
   const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
   const playerColors = generatePlayerColors(players);
+
   const isGameOver = () => {
-    if (!players.length) {
+    if (!gameStarted) {
       return false;
     }
 
@@ -73,7 +74,7 @@ const RoomPage = () => {
 
   const handlePlayerGuessed = (index) => {
     const player = players[index];
-    if (player.createdBy !== player.ownedBy) return;
+    if (player.createdBy !== player.ownedBy || !gameStarted) return;
     setEditingIndex(index);
     setSelectedPlayer(playersStillIn[0]);
   };
@@ -94,14 +95,40 @@ const RoomPage = () => {
   };
 
   useEffect(() => {
-    socket.on("playerJoined" + roomName, (data) => {
-      setPlayers([...players, data.playerId]);
-    });
+    const handlePlayerJoined = (data) => {
+      if (gameStarted) return;
+
+      const fetchPlayer = async () => {
+        try {
+          const response = await axios.get(`/api/players/${data.playerId}`);
+          const player = response.data;
+
+          const newPlayer = {
+            _id: data.playerId,
+            input: player.input,
+            createdBy: player.name,
+            ownedBy: player.name,
+          };
+
+          setPlayers([...players, newPlayer]);
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.log("Error fetching player with id:", data.playerId);
+          } else {
+            console.error("Error fetching player:", error);
+          }
+        }
+      };
+
+      fetchPlayer();
+    };
+
+    socket.on("playerJoined" + roomName, handlePlayerJoined);
 
     return () => {
-      socket.off("playerJoined");
+      socket.off("playerJoined" + roomName, handlePlayerJoined);
     };
-  }, [players, roomName]);
+  }, [players, roomName, gameStarted]);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -131,12 +158,18 @@ const RoomPage = () => {
     }
 
     if (!players.length) {
-      <Box mt={2} width="300px">
-        <Typography variant="body1" align="center" mb={4} className="loading">
-          Waiting for players
-        </Typography>
-        <StyledButton text="Start" />
-      </Box>;
+      return (
+        <Box mt={2} width="300px">
+          <Typography variant="body1" align="center" mb={4} className="loading">
+            Waiting for players
+          </Typography>
+          <StyledButton
+            text="Start"
+            disabled={players.length < 3}
+            onClick={() => setGameStarted(true)}
+          />
+        </Box>
+      );
     }
 
     if (isGameOver()) {
@@ -165,10 +198,10 @@ const RoomPage = () => {
 
     return (
       <Box>
-        <PlayersStillIn playersStillIn={playersStillIn} />
+        {gameStarted && <PlayersStillIn playersStillIn={playersStillIn} />}
         <Grid container p={3}>
           {players.map((player, index) => (
-            <Grid key={index} item xs={6}>
+            <Grid key={player._id} item xs={6}>
               {editingIndex === index ? (
                 <Select
                   fullWidth
@@ -182,6 +215,7 @@ const RoomPage = () => {
                     "& .MuiSelect-select": {
                       padding: "13px",
                     },
+                    minWidth: "200px",
                   }}
                 >
                   {playersStillIn.map((player) => (
@@ -194,10 +228,16 @@ const RoomPage = () => {
                 <Typography
                   sx={{
                     border: "1px solid black",
-                    cursor: "pointer",
+                    cursor:
+                      gameStarted && player.createdBy === player.ownedBy
+                        ? "pointer"
+                        : "",
+                    minWidth: "200px",
                   }}
                   bgcolor={
-                    player.createdBy !== player.ownedBy
+                    !gameStarted
+                      ? "#eee"
+                      : player.createdBy !== player.ownedBy
                       ? playerColors[player.ownedBy]
                       : ""
                   }
@@ -216,6 +256,15 @@ const RoomPage = () => {
             </Grid>
           ))}
         </Grid>
+        {!gameStarted && (
+          <Box p={3}>
+            <StyledButton
+              text="Start"
+              disabled={players.length < 3}
+              onClick={startGame}
+            />
+          </Box>
+        )}
       </Box>
     );
   };

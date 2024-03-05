@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button } from "@mui/material";
 
-const StyledButton = ({ text, mb, onClick }) => {
+const StyledButton = ({ text, mb, onClick, disabled }) => {
   return (
     <Button
       variant="contained"
@@ -15,6 +15,7 @@ const StyledButton = ({ text, mb, onClick }) => {
       }}
       color="secondary"
       onClick={onClick}
+      disabled={disabled}
     >
       {text}
     </Button>
@@ -25,6 +26,7 @@ StyledButton.propTypes = {
   text: PropTypes.string.isRequired,
   mb: PropTypes.number,
   onClick: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default StyledButton;

@@ -6,7 +6,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import StyledButton from "../components/StyledButton";
 
-const socket = io.connect("http://localhost:7000");
+const socket = io.connect("https://guessing-game-backend.onrender.com/");
 
 const JoinRoomPage = () => {
   const [roomName, setRoomName] = useState("");

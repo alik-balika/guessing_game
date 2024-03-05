@@ -7,7 +7,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:7000";
+axios.defaults.baseURL = "https://guessing-game-backend.onrender.com/";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

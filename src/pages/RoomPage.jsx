@@ -46,8 +46,7 @@ const samplePlayers = [
   },
 ];
 
-// TODO MAKE A PLAY AGAIN BUTTON OR SOMETHING
-// MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
+// TODO MAKE HISTORY ARRAY RATHER THAN PLAYERS ARRAY IN CASE UNDO IS NEEDED
 // PUBLISH CODE AND MAKE IT ONLINE
 
 const RoomPage = () => {
@@ -163,11 +162,7 @@ const RoomPage = () => {
           <Typography variant="body1" align="center" mb={4} className="loading">
             Waiting for players
           </Typography>
-          <StyledButton
-            text="Start"
-            disabled={players.length < 3}
-            onClick={() => setGameStarted(true)}
-          />
+          <StyledButton text="Start" disabled={true} />
         </Box>
       );
     }
@@ -191,7 +186,10 @@ const RoomPage = () => {
             </span>{" "}
             wins!
           </Typography>
-          <StyledButton text="Play Again" />
+          <StyledButton
+            text="Play Again"
+            onClick={() => window.location.reload()}
+          />
         </Box>
       );
     }
@@ -261,7 +259,7 @@ const RoomPage = () => {
             <StyledButton
               text="Start"
               disabled={players.length < 3}
-              onClick={startGame}
+              onClick={() => setGameStarted(true)}
             />
           </Box>
         )}

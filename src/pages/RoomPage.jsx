@@ -22,19 +22,58 @@ import PlayersStillIn from "../components/PlayersStillIn";
 
 const socket = io.connect("https://guessing-game-backend.onrender.com/");
 
+// const samplePlayers = [
+//   {
+//     _id: 1,
+//     createdBy: "1",
+//     ownedBy: "1",
+//     input: "1",
+//   },
+//   {
+//     _id: 2,
+//     createdBy: "2",
+//     ownedBy: "2",
+//     input: "2",
+//   },
+//   {
+//     _id: 3,
+//     createdBy: "3",
+//     ownedBy: "3",
+//     input: "3",
+//   },
+//   {
+//     _id: 4,
+//     createdBy: "4",
+//     ownedBy: "4",
+//     input: "4",
+//   },
+// ];
+
 const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
   const [history, setHistory] = useState([[]]);
   const [explosionKey, setExplosionKey] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
+  const [historyOfPlayersStillIn, setHistoryOfPlayersStillIn] = useState([[]]);
 
   const [editingIndex, setEditingIndex] = useState(-1);
   const [selectedPlayer, setSelectedPlayer] = useState("");
 
   const players = history[history.length - 1];
-  const playersStillIn = [...new Set(players.map((player) => player.ownedBy))];
+  const playersStillIn =
+    historyOfPlayersStillIn[historyOfPlayersStillIn.length - 1];
   const playerColors = generatePlayerColors(players);
+
+  function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  }
 
   const isGameOver = () => {
     if (!gameStarted) {
@@ -54,6 +93,16 @@ const RoomPage = () => {
 
   const handleInputBlur = () => {
     const previousOwner = players[editingIndex].ownedBy;
+    if (selectedPlayer === previousOwner) {
+      setEditingIndex(-1);
+      setSelectedPlayer("");
+      return;
+    }
+
+    setHistoryOfPlayersStillIn([
+      ...historyOfPlayersStillIn,
+      playersStillIn.filter((player) => player !== previousOwner),
+    ]);
 
     const updatedPlayers = players.map((player) => {
       if (player.ownedBy === previousOwner) {
@@ -124,6 +173,15 @@ const RoomPage = () => {
   const undoLastInput = () => {
     const prevHistory = [...history.slice(0, -1)];
     setHistory(prevHistory);
+    const prevPlayersStillIn = [...historyOfPlayersStillIn.slice(0, -1)];
+    setHistoryOfPlayersStillIn(prevPlayersStillIn);
+  };
+
+  const startGame = () => {
+    setGameStarted(true);
+    setHistoryOfPlayersStillIn([
+      shuffleArray([...new Set(players.map((player) => player.ownedBy))]),
+    ]);
   };
 
   const renderRoomContent = () => {
@@ -216,6 +274,8 @@ const RoomPage = () => {
                         ? "pointer"
                         : "",
                     minWidth: "180px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                   bgcolor={
                     !gameStarted
@@ -244,7 +304,7 @@ const RoomPage = () => {
             <StyledButton
               text="Start"
               disabled={players.length < 3}
-              onClick={() => setGameStarted(true)}
+              onClick={startGame}
             />
           </Box>
         )}

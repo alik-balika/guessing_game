@@ -198,7 +198,7 @@ const RoomPage = () => {
                     "& .MuiSelect-select": {
                       padding: "13px",
                     },
-                    minWidth: "200px",
+                    minWidth: "180px",
                   }}
                 >
                   {playersStillIn.map((player) => (
@@ -215,7 +215,7 @@ const RoomPage = () => {
                       gameStarted && player.createdBy === player.ownedBy
                         ? "pointer"
                         : "",
-                    minWidth: "200px",
+                    minWidth: "180px",
                   }}
                   bgcolor={
                     !gameStarted

@@ -22,33 +22,6 @@ import PlayersStillIn from "../components/PlayersStillIn";
 
 const socket = io.connect("https://guessing-game-backend.onrender.com/");
 
-// const samplePlayers = [
-//   {
-//     _id: 1,
-//     createdBy: "1",
-//     ownedBy: "1",
-//     input: "1",
-//   },
-//   {
-//     _id: 2,
-//     createdBy: "2",
-//     ownedBy: "2",
-//     input: "2",
-//   },
-//   {
-//     _id: 3,
-//     createdBy: "3",
-//     ownedBy: "3",
-//     input: "3",
-//   },
-//   {
-//     _id: 4,
-//     createdBy: "4",
-//     ownedBy: "4",
-//     input: "4",
-//   },
-// ];
-
 const RoomPage = () => {
   const { roomName } = useParams();
   const [roomExists, setRoomExists] = useState(true);
@@ -134,6 +107,9 @@ const RoomPage = () => {
 
           const updatedPlayers = [...players, newPlayer];
           setHistory([updatedPlayers]);
+          setHistoryOfPlayersStillIn([
+            updatedPlayers.map((player) => player.ownedBy),
+          ]);
         } catch (error) {
           if (error.response && error.response.status === 404) {
             console.log("Error fetching player with id:", data.playerId);
@@ -179,6 +155,7 @@ const RoomPage = () => {
 
   const startGame = () => {
     setGameStarted(true);
+    setHistory([shuffleArray(players)]);
     setHistoryOfPlayersStillIn([
       shuffleArray([...new Set(players.map((player) => player.ownedBy))]),
     ]);
@@ -234,7 +211,10 @@ const RoomPage = () => {
 
     return (
       <Box>
-        {gameStarted && <PlayersStillIn playersStillIn={playersStillIn} />}
+        <PlayersStillIn
+          title={gameStarted ? "Still in:" : "Joined:"}
+          playersStillIn={playersStillIn}
+        />
         {gameStarted && history.length > 1 && (
           <IconButton sx={{ px: 3 }} onClick={undoLastInput}>
             <UndoIcon fontSize="large" />
@@ -268,7 +248,7 @@ const RoomPage = () => {
               ) : (
                 <Typography
                   sx={{
-                    border: "1px solid black",
+                    border: `1px solid ${gameStarted ? "black" : "white"}`,
                     cursor:
                       gameStarted && player.createdBy === player.ownedBy
                         ? "pointer"
@@ -279,7 +259,7 @@ const RoomPage = () => {
                   }}
                   bgcolor={
                     !gameStarted
-                      ? "#eee"
+                      ? "black"
                       : player.createdBy !== player.ownedBy
                       ? playerColors[player.ownedBy]
                       : ""

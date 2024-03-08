@@ -294,7 +294,7 @@ const RoomPage = () => {
 
   return (
     <Stack direction="column" alignItems="center">
-      <Header title={roomName} />
+      <Header title={roomName} copyIcon={!gameStarted} />
       {renderRoomContent()}
     </Stack>
   );

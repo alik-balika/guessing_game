@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Box, TextField, Typography } from "@mui/material";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -13,6 +14,13 @@ const JoinRoomPage = () => {
   const [userName, setUserName] = useState("");
   const [userInput, setUserInput] = useState("");
   const [submit, setSubmit] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const roomParam = searchParams.get("room");
+
+  if (roomParam && !roomName) {
+    setRoomName(roomParam);
+  }
 
   const joinRoom = async () => {
     let message = "";
@@ -91,6 +99,7 @@ const JoinRoomPage = () => {
               color="secondary"
               fullWidth
               value={roomName}
+              disabled={roomParam !== null}
               onChange={(e) => setRoomName(e.target.value)}
               sx={{ marginBottom: 2 }}
             />
